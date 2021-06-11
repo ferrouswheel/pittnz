@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Set Git identity
+      run: |
+        git config --global user.email "joel@joelpitt.com"
+        git config --global user.name "Joel Pitt"
+    - name: Checkout Zola
+      run: curl -s -L https://github.com/getzola/zola/releases/download/v0.13.0/zola-v0.13.0-x86_64-unknown-linux-gnu.tar.gz | sudo tar xvzf - -C /usr/local/bin
+    - name: Build
+      run: |
+        cd $GITHUB_WORKSPACE
+        zola build
+    - name: Clean
+      run: |
+        cd $GITHUB_WORKSPACE
+        echo "TEMP_DIR=$(mktemp -d)" >> $GITHUB_ENV
+        cp -r public/* ${{ env.TEMP_DIR}}/.
+    - name: Push to gh-pages
+      run: |
+        cd $GITHUB_WORKSPACE
+        git fetch -p
+        git checkout gh-pages
+        cp CNAME ${{ env.TEMP_DIR}}/.
+        rm -rf *
+        cp -r ${{ env.TEMP_DIR}}/* .
+        git add -f .
+        git commit -m "New release"
+        git push origin gh-pages
