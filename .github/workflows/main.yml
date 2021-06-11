@@ -17,14 +17,13 @@ jobs:
         git config --global user.name "Joel Pitt"
     - name: Checkout Zola
       run: curl -s -L https://github.com/getzola/zola/releases/download/v0.13.0/zola-v0.13.0-x86_64-unknown-linux-gnu.tar.gz | sudo tar xvzf - -C /usr/local/bin
+    - name: Create temp dir
+      run: |
+        echo "TEMP_DIR=$(mktemp -d)" >> $GITHUB_ENV
     - name: Build
       run: |
         cd $GITHUB_WORKSPACE
         zola build
-    - name: Clean
-      run: |
-        cd $GITHUB_WORKSPACE
-        echo "TEMP_DIR=$(mktemp -d)" >> $GITHUB_ENV
         cp -r public/* ${{ env.TEMP_DIR}}/.
     - name: Push to gh-pages
       run: |
